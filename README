@@ -1,0 +1,8 @@
+Build and Run:
+--------------
+Build:
+make
+
+Run:
+./test if your gpu can compress textures
+./test compressed_texture to load already compressed data (recommended)
