@@ -2,7 +2,7 @@ obj = main.o
 bin = test
 
 CFLAGS = -pedantic -Wall -g
-LDFLAGS = -lGL -lglut
+LDFLAGS = -lGLEW -lGL -lglut
 
 $(bin): $(obj)
 	$(CC) -o $@ $(obj) $(LDFLAGS)

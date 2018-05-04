@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <GL/glew.h>
 #include <GL/freeglut.h>
 
 #undef USE_SRGB
@@ -44,6 +45,8 @@ int main(int argc, char **argv)
 	glutDisplayFunc(disp);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyb);
+
+	glewInit();
 
 	if(init() == -1) {
 		return 1;
@@ -353,7 +356,11 @@ void print_compressed_formats(void)
 	glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, fmtlist);
 
 	for(i=0; i<num_fmt; i++) {
+		printf("\n");
 		printf(" %05x: %s\n", fmtlist[i], fmtstr(fmtlist[i]));
+		GLint params;
+		glGetInternalformativ(GL_TEXTURE_2D, fmtlist[i], GL_TEXTURE_COMPRESSED, 1, &params);
+		printf("the format is %s\n", params == GL_TRUE ? "compressed" : "not compressed");
 	}
 	free(fmtlist);
 }
