@@ -27,15 +27,32 @@ void print_compressed_formats(void);
 
 unsigned int tex, comp_tex;
 const char *texfile;
+int subtest;
 
 int main(int argc, char **argv)
 {
+	int i;
 	unsigned int glut_flags = GLUT_RGB | GLUT_DOUBLE;
 #ifdef USE_SRGB
 	glut_flags |= GLUT_SRGB;
 #endif
 
-	texfile = argv[1];
+	for(i=1; i<argc; i++) {
+		if(argv[i][0] == '-') {
+			if(strcmp(argv[i], "-subtest") == 0) {
+				subtest = 1;
+			} else {
+				fprintf(stderr, "invalid option: %s\n", argv[i]);
+				return 1;
+			}
+		} else {
+			if(texfile) {
+				fprintf(stderr, "unexpected argument: %s\n", argv[i]);
+				return 1;
+			}
+			texfile = argv[1];
+		}
+	}
 
 	glutInit(&argc, argv);
 	glutInitWindowSize(800, 600);
@@ -120,6 +137,13 @@ int init(void)
 	} else {
 		printf("submitted and retrieved sizes match (%d bytes)\n", comp_size);
 	}
+
+	if(subtest) {
+		memset(buf, 0, comp_size);
+		glGetCompressedTextureSubImage(tex, 0, 192, 64, 0, 64, 64, 1, comp_size, buf);
+		glCompressedTexSubImage2D(GL_TEXTURE_2D, 0, 32, 32, 64, 64, COMP_FMT, 2048, buf);
+	}
+
 	free(buf);
 	free(pixels);
 
