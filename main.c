@@ -25,9 +25,9 @@ unsigned char *load_compressed_image(const char *fname, int *cszptr, int *xszptr
 int dump_compressed_image(const char *fname, unsigned char *data, int size, int w, int h);
 void print_compressed_formats(void);
 
-unsigned int tex, comp_tex;
+unsigned int tex, tex2, comp_tex;
 const char *texfile;
-int subtest;
+int subtest, copytest;
 
 int main(int argc, char **argv)
 {
@@ -41,6 +41,8 @@ int main(int argc, char **argv)
 		if(argv[i][0] == '-') {
 			if(strcmp(argv[i], "-subtest") == 0) {
 				subtest = 1;
+			} else if(strcmp(argv[i], "-copytest") == 0) {
+				copytest = 1;
 			} else {
 				fprintf(stderr, "invalid option: %s\n", argv[i]);
 				return 1;
@@ -50,7 +52,7 @@ int main(int argc, char **argv)
 				fprintf(stderr, "unexpected argument: %s\n", argv[i]);
 				return 1;
 			}
-			texfile = argv[1];
+			texfile = argv[i];
 		}
 	}
 
@@ -139,9 +141,26 @@ int init(void)
 	}
 
 	if(subtest) {
+		printf("testing glGetCompressedTextureSubImage and glCompressedTexSubImage2D\n");
 		memset(buf, 0, comp_size);
 		glGetCompressedTextureSubImage(tex, 0, 192, 64, 0, 64, 64, 1, comp_size, buf);
 		glCompressedTexSubImage2D(GL_TEXTURE_2D, 0, 32, 32, 64, 64, COMP_FMT, 2048, buf);
+	}
+
+	if(copytest) {
+		printf("testing glCopyImageSubData\n");
+
+		glGenTextures(1, &tex2);
+		glBindTexture(GL_TEXTURE_2D, tex2);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glCompressedTexImage2D(GL_TEXTURE_2D, 0, COMP_FMT, xsz, ysz, 0, comp_size, pixels);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glCopyImageSubData(tex2, GL_TEXTURE_2D, 0, 128, 64, 0,
+				tex, GL_TEXTURE_2D, 0, 32, 32, 0, 64, 64, 1);
+
+		glBindTexture(GL_TEXTURE_2D, tex);
 	}
 
 	free(buf);
@@ -380,11 +399,10 @@ void print_compressed_formats(void)
 	glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, fmtlist);
 
 	for(i=0; i<num_fmt; i++) {
-		printf("\n");
-		printf(" %05x: %s\n", fmtlist[i], fmtstr(fmtlist[i]));
+		printf(" %05x: %s ", fmtlist[i], fmtstr(fmtlist[i]));
 		GLint params;
 		glGetInternalformativ(GL_TEXTURE_2D, fmtlist[i], GL_TEXTURE_COMPRESSED, 1, &params);
-		printf("the format is %s\n", params == GL_TRUE ? "compressed" : "not compressed");
+		printf("(%s format)\n", params == GL_TRUE ? "compressed" : "not compressed");
 	}
 	free(fmtlist);
 }
