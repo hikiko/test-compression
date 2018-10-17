@@ -20,6 +20,7 @@ int texcomp(unsigned char *compix, unsigned int tofmt, unsigned char *pixels,
 void disp(void);
 void reshape(int x, int y);
 void keyb(unsigned char key, int x, int y);
+void idle();
 void gen_image(unsigned char *pixels, int xsz, int ysz);
 unsigned char *load_compressed_image(const char *fname, int *cszptr, int *xszptr, int *yszptr);
 int dump_compressed_image(const char *fname, unsigned char *data, int size, int w, int h);
@@ -27,7 +28,7 @@ void print_compressed_formats(void);
 
 unsigned int tex, tex2, comp_tex;
 const char *texfile;
-int subtest, copytest;
+int subtest, copytest, loop;
 
 int main(int argc, char **argv)
 {
@@ -43,6 +44,9 @@ int main(int argc, char **argv)
 				subtest = 1;
 			} else if(strcmp(argv[i], "-copytest") == 0) {
 				copytest = 1;
+			} else if(strcmp(argv[i], "-copytest-loop") == 0) {
+				copytest = 1;
+				loop = 1;
 			} else {
 				fprintf(stderr, "invalid option: %s\n", argv[i]);
 				return 1;
@@ -64,6 +68,9 @@ int main(int argc, char **argv)
 	glutDisplayFunc(disp);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyb);
+
+	if (loop)
+		glutIdleFunc(idle);
 
 	glewInit();
 
@@ -230,6 +237,11 @@ void keyb(unsigned char key, int x, int y)
 	if(key == 27) {
 		exit(0);
 	}
+}
+
+void idle()
+{
+	glutPostRedisplay();
 }
 
 void gen_image(unsigned char *pixels, int xsz, int ysz)
