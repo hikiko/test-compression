@@ -67,9 +67,9 @@ int main(int argc, char **argv)
 	glutDisplayFunc(disp);
 	glutReshapeFunc(reshape);
 	glutKeyboardFunc(keyb);
-
-	if (loop)
+	if(loop) {
 		glutIdleFunc(idle);
+	}
 
 	glewInit();
 
@@ -217,21 +217,6 @@ void keyb(unsigned char key, int x, int y)
 void idle(void)
 {
 	glutPostRedisplay();
-}
-
-void gen_image(unsigned char *pixels, int xsz, int ysz)
-{
-	int i, j;
-
-	for(i=0; i<ysz; i++) {
-		for(j=0; j<xsz; j++) {
-			int xor = i ^ j;
-
-			*pixels++ = xor & 0xff;
-			*pixels++ = (xor << 1) & 0xff;
-			*pixels++ = (xor << 2) & 0xff;
-		}
-	}
 }
 
 struct header {
